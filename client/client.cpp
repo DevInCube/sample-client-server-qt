@@ -1,6 +1,5 @@
 #include "client.h"
 #include <QTcpSocket>
-#include <iostream>
 #include <QHostAddress>
 
 using namespace std;
@@ -14,33 +13,35 @@ Client::Client(QObject *parent) : QObject(parent)
     connect(client, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     QHostAddress serverAddress("127.0.0.1");
     int PORT = 3000;
-    cout << "connecting to server at port " << PORT << endl;
+    qDebug() << "connecting to server at port " << PORT;
     client->connectToHost(serverAddress, PORT);
 }
 
 void Client::onConnected() {
-    cout << "connected" << endl;
+    qDebug() << "connected" << endl;
     QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
     QString requestStr = "Hello!";
-    cout << "Sending: " << endl << requestStr.toStdString() << endl;
+    qDebug() << "Sending: ";
+    qDebug() << requestStr;
     clientSocket->write(requestStr.toUtf8());
     clientSocket->flush();
 }
 
 void Client::onReadyRead() {
-    cout << "ready to read" << endl;
+    qDebug() << "ready to read" << endl;
     QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
     QByteArray data = clientSocket->readAll();
-    cout << "Received:" << endl << data.toStdString() << endl;
+    qDebug() << "Received " << data.length() << " bytes:";
+    qDebug() << data;
     clientSocket->disconnectFromHost();
 }
 
 void Client::onBytesWritten(qint64 n) {
-    cout << "bytes  written " << endl;
+    qDebug() << n << " bytes  written";
 }
 
 void Client::onDisconnected() {
-    cout << "disconnected" << endl;
+    qDebug() << "disconnected";
     QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
     delete clientSocket;
 }
