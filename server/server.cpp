@@ -18,7 +18,7 @@ bool Server::start(int port)
 
 void Server::onNewConnection()
 {
-    qDebug() << "got new connection";
+    qDebug() << "# Got new connection.";
 
     QTcpSocket * clientSocket = tcpServer.nextPendingConnection();
     connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
@@ -28,18 +28,18 @@ void Server::onNewConnection()
 
 void Server::onReadyRead()
 {
-    qDebug() << "receiving data";
+    qDebug() << "# Receiving request data:";
 
     QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
 
     QByteArray data = clientSocket->readAll();
 
-    qDebug() << "Received " << data.length() << " bytes:";
+    qDebug() << "# Received " << data.length() << " bytes:";
     qDebug() << data;
 
     QString responseStr = "Hello from server!";
 
-    qDebug() << "Sending: ";
+    qDebug() << "# Sending response: ";
     qDebug() << responseStr;
 
     clientSocket->write(responseStr.toUtf8());
@@ -48,7 +48,7 @@ void Server::onReadyRead()
 
 void Server::onBytesWritten(qint64 n)
 {
-    qDebug() << n << "bytes written";
+    qDebug() << "#" << n << "bytes sent.";
 
     QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
     clientSocket->close();
@@ -56,8 +56,8 @@ void Server::onBytesWritten(qint64 n)
 
 void Server::onClientDisconnected()
 {
-    qDebug() << "Client disconnected ";
+    qDebug() << "# Client disconnected.";
 
     QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
-    delete clientSocket;
+    clientSocket->deleteLater();
 }

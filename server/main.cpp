@@ -1,10 +1,6 @@
 #include <QCoreApplication>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <iostream>
-#include <server.h>
 
-using namespace std;
+#include "server.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,11 +8,11 @@ int main(int argc, char *argv[])
 
     Server server(&a);
 
-    int PORT = 3000;
+    const int PORT = 3000;
     if (!server.start(PORT)) {
-        qDebug() << "error listen ";
+        qDebug() << "[ERROR] Can't start server at port " << PORT;
     } else {
-        qDebug() << "started at " << PORT;
+        qDebug() << "Server started at port " << PORT;
     }
 
     return a.exec();

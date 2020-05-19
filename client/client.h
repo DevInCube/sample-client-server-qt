@@ -21,6 +21,7 @@ signals:
 
 public slots:
     void onConnected();
+    void onError(QAbstractSocket::SocketError);
     void onReadyRead();
     void onBytesWritten(qint64);
     void onDisconnected();
