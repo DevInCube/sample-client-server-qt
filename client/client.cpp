@@ -5,8 +5,8 @@
 using namespace std;
 
 Client::Client(int port, QObject *parent)
-    : port(port),
-      QObject(parent),
+    : QObject(parent),
+      port(port),
       socket(this)
 {
     connect(&socket, SIGNAL(connected()), this, SLOT(onConnected()));

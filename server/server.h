@@ -6,10 +6,13 @@
 
 class Server : public QObject
 {
-    QTcpServer * tcpServer;
+    QTcpServer tcpServer;
+
     Q_OBJECT
 public:
     explicit Server(QObject *parent = nullptr);
+
+    bool start(int port);
 
 signals:
 

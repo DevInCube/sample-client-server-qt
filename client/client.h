@@ -6,8 +6,8 @@
 
 class Client : public QObject
 {
-    QTcpSocket socket;
     int port;
+    QTcpSocket socket;
     QByteArray request;
 
     Q_OBJECT
