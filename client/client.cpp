@@ -51,7 +51,7 @@ void Client::onDisconnected()
 
 void Client::onReadyRead()
 {
-    qDebug() << "# New imcoming data available:";
+    qDebug() << "# New incoming data available:";
 
     QByteArray data = socket.readAll();
 

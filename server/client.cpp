@@ -23,7 +23,7 @@ void Client::onError(QAbstractSocket::SocketError error)
 
 void Client::onReadyRead()
 {
-    qDebug() << "# New imcoming data available:";
+    qDebug() << "# New incoming data available:";
 
     QByteArray data = socket->readAll();
 
