@@ -3,24 +3,24 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QByteArray>
 
 class Client : public QObject
 {
-    QTcpSocket socket;
-    QByteArray outgoingMessage;
+    QTcpSocket * socket;
     QByteArray incomingMessage;
 
     Q_OBJECT
 public:
-    explicit Client(QObject *parent = nullptr);
+    explicit Client(QTcpSocket * socket, QObject *parent = nullptr);
 
-    void sendMessage(int, const QByteArray &);
+    void sendMessage(const QByteArray &);
 
 signals:
-    void gotMessage(QByteArray);
+    void gotMessage(QByteArray);  // copy
+    void disconnected();
 
 public slots:
-    void onConnected();
     void onError(QAbstractSocket::SocketError);
     void onReadyRead();
     void onBytesWritten(qint64);

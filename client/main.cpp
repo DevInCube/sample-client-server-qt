@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     Client client(&a);
     // subscribe to response
-    QObject::connect(&client, &Client::gotResponse, &onResponse);
+    QObject::connect(&client, &Client::gotMessage, &onResponse);
     // create request with length
     int32_t header_length = 4;
     int32_t data_length = 100000;
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     qDebug() << big_data.length();
     // send request
     const int SERVER_PORT = 3000;
-    client.sendRequest(SERVER_PORT, big_data);
+    client.sendMessage(SERVER_PORT, big_data);
 
     return a.exec();
 }

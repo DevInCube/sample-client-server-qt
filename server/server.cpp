@@ -2,6 +2,7 @@
 #include <QDataStream>
 #include <QDebug>
 #include "server.h"
+#include "client.h"
 
 using namespace std;
 
@@ -22,62 +23,30 @@ void Server::onNewConnection()
     qDebug() << "# Got new connection.";
 
     QTcpSocket * clientSocket = tcpServer.nextPendingConnection();
-    connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(clientSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(onBytesWritten(qint64)));
-    connect(clientSocket, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
+    
+    Client * client = new Client(clientSocket, this);
+    connect(client, SIGNAL(gotMessage(QByteArray)), this, SLOT(onMessageReceived(QByteArray)));
+    connect(client, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
+    
+    //connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    //connect(clientSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(onBytesWritten(qint64)));
+    //connect(clientSocket, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
 }
 
-void Server::onReadyRead()
+void Server::onMessageReceived(QByteArray message)
 {
-    qDebug() << "# Receiving request data:";
+    qDebug() << "# Client received a message.";
 
-    QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
-
-    QByteArray data = clientSocket->readAll();
-
-    qDebug() << "# Received " << data.length() << " bytes:";
-    qDebug() << data;
-
-    if (request.length() == 0) // first part
-        request = data;
-    else
-        request.append(data);
-
-    QDataStream stream(&request, QIODevice::ReadOnly);
-    int32_t message_length = 0;
-    stream >> message_length;
-
-    qDebug() << "# Received data length: " << request.length();
-    qDebug() << "# Total message length: " << message_length;
-
-    if (message_length == request.length())
-    {
-        qDebug() << "# Got full request here.";
-
-        QString responseStr = "Hello from server!";
-
-        qDebug() << "# Sending response: ";
-        qDebug() << responseStr;
-
-        clientSocket->write(responseStr.toUtf8());
-        clientSocket->flush();
-
-        request.clear();
-    }
-}
-
-void Server::onBytesWritten(qint64 n)
-{
-    qDebug() << "#" << n << "bytes sent.";
-
-    QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
-    clientSocket->close();
+    Client * client = static_cast<Client*>(sender());
+    client->sendMessage(message);  // echo server
 }
 
 void Server::onClientDisconnected()
 {
     qDebug() << "# Client disconnected.";
 
-    QTcpSocket * clientSocket = static_cast<QTcpSocket*>(sender());
-    clientSocket->deleteLater();
+    Client * client = static_cast<Client*>(sender());
+
+    client->deleteLater();
 }
+

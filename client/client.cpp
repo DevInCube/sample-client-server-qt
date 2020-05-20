@@ -1,4 +1,5 @@
 #include <QHostAddress>
+#include <QDataStream>
 
 #include "client.h"
 
@@ -6,7 +7,8 @@ Client::Client(QObject *parent)
     : QObject(parent),
       socket(this)
 {
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(onError(QAbstractSocket::SocketError)));
 
     connect(&socket, SIGNAL(connected()), this, SLOT(onConnected()));
     connect(&socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -15,11 +17,11 @@ Client::Client(QObject *parent)
     connect(&socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
-void Client::sendRequest(int port, QByteArray data)
+void Client::sendMessage(int port, const QByteArray & data)
 {
     qDebug() << "# Connecting to server at port " << port << "...";
 
-    request = data;
+    outgoingMessage = data;
     socket.connectToHost(QHostAddress::LocalHost, port);
 }
 
@@ -33,13 +35,13 @@ void Client::onError(QAbstractSocket::SocketError error)
 void Client::onConnected()
 {
     qDebug() << "# Connected to server.";
-    qDebug() << "# Sending " << request.length() << " bytes:";
-    qDebug() << QString::fromUtf8(request);
+    qDebug() << "# Sending " << outgoingMessage.length() << " bytes:";
+    qDebug() << QString::fromUtf8(outgoingMessage);
 
-    socket.write(request);
+    socket.write(outgoingMessage);
     socket.flush();
 
-    request.clear();
+    outgoingMessage.clear();
 }
 
 void Client::onDisconnected()
@@ -49,17 +51,37 @@ void Client::onDisconnected()
 
 void Client::onReadyRead()
 {
-    qDebug() << "# Ready to read response.";
+    qDebug() << "# New imcoming data available:";
 
     QByteArray data = socket.readAll();
 
     qDebug() << "# Received " << data.length() << " bytes:";
     qDebug() << data;
 
-    emit gotResponse(data);
+    if (incomingMessage.length() == 0) // first part
+        incomingMessage = data;
+    else
+        incomingMessage.append(data);
 
-    socket.disconnectFromHost();
-    socket.close();
+    QDataStream stream(&incomingMessage, QIODevice::ReadOnly);
+    int32_t message_length = 0;
+    stream >> message_length;
+
+    qDebug() << "# Received total data length: " << incomingMessage.length();
+    qDebug() << "# Total message length: " << message_length;
+
+    if (message_length == incomingMessage.length())  // condition
+    {
+        qDebug() << "# Got full request here.";
+
+        emit gotMessage(incomingMessage);
+
+        incomingMessage.clear();
+
+        // close connection
+        socket.disconnectFromHost();
+        socket.close();
+    }
 }
 
 void Client::onBytesWritten(qint64 n)
