@@ -1,4 +1,5 @@
 #include <QTcpSocket>
+#include <QDataStream>
 #include <QDebug>
 #include "server.h"
 
@@ -37,13 +38,32 @@ void Server::onReadyRead()
     qDebug() << "# Received " << data.length() << " bytes:";
     qDebug() << data;
 
-    QString responseStr = "Hello from server!";
+    if (request.length() == 0) // first part
+        request = data;
+    else
+        request.append(data);
 
-    qDebug() << "# Sending response: ";
-    qDebug() << responseStr;
+    QDataStream stream(&request, QIODevice::ReadOnly);
+    int32_t message_length = 0;
+    stream >> message_length;
 
-    clientSocket->write(responseStr.toUtf8());
-    clientSocket->flush();
+    qDebug() << "# Received data length: " << request.length();
+    qDebug() << "# Total message length: " << message_length;
+
+    if (message_length == request.length())
+    {
+        qDebug() << "# Got full request here.";
+
+        QString responseStr = "Hello from server!";
+
+        qDebug() << "# Sending response: ";
+        qDebug() << responseStr;
+
+        clientSocket->write(responseStr.toUtf8());
+        clientSocket->flush();
+
+        request.clear();
+    }
 }
 
 void Server::onBytesWritten(qint64 n)

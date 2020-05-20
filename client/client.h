@@ -6,15 +6,14 @@
 
 class Client : public QObject
 {
-    int port;
     QTcpSocket socket;
     QByteArray request;
 
     Q_OBJECT
 public:
-    explicit Client(int port, QObject *parent = nullptr);
+    explicit Client(QObject *parent = nullptr);
 
-    void sendRequest(QByteArray);
+    void sendRequest(int, QByteArray);
 
 signals:
     void gotResponse(QByteArray);

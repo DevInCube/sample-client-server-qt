@@ -7,6 +7,7 @@
 class Server : public QObject
 {
     QTcpServer tcpServer;
+    QByteArray request;
 
     Q_OBJECT
 public:

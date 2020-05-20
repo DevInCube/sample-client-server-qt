@@ -2,9 +2,8 @@
 
 #include "client.h"
 
-Client::Client(int port, QObject *parent)
+Client::Client(QObject *parent)
     : QObject(parent),
-      port(port),
       socket(this)
 {
     connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
@@ -16,7 +15,7 @@ Client::Client(int port, QObject *parent)
     connect(&socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }
 
-void Client::sendRequest(QByteArray data)
+void Client::sendRequest(int port, QByteArray data)
 {
     qDebug() << "# Connecting to server at port " << port << "...";
 

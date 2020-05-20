@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include <QDataStream>
 
 #include "client.h"
 
@@ -8,11 +9,23 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    Client client(3000, &a);  // set server port
+    Client client(&a);
     // subscribe to response
     QObject::connect(&client, &Client::gotResponse, &onResponse);
+    // create request with length
+    int32_t header_length = 4;
+    int32_t data_length = 100000;
+    QByteArray big_data(data_length, 'A');
+    QByteArray header;
+    QDataStream stream(&header, QIODevice::WriteOnly);  // QDataStream
+    stream << header_length + data_length;
+    qDebug() << header;
+    qDebug() << header.length();
+    big_data.prepend(header);
+    qDebug() << big_data.length();
     // send request
-    client.sendRequest(QString("A request string").toUtf8());
+    const int SERVER_PORT = 3000;
+    client.sendRequest(SERVER_PORT, big_data);
 
     return a.exec();
 }
